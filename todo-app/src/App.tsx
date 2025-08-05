@@ -20,7 +20,6 @@ function App() {
   const [todos, setTodos] = useState<Todo[]>([])
   const [inputValue, setInputValue] = useState<string>('')
 
-  // Load todos from localStorage on component mount
   useEffect(() => {
     const savedTodos = localStorage.getItem('todos')
     if (savedTodos) {
@@ -29,25 +28,20 @@ function App() {
         setTodos(parsedTodos)
       } catch (error) {
         console.error('Error parsing todos from localStorage:', error)
-        // VULNERABILITY 3: localStorage security - storing potentially corrupted data
         localStorage.removeItem('todos')
       }
     }
   }, [])
 
-  // Save todos to localStorage whenever todos change
-  // VULNERABILITY 3: localStorage Security - No encryption, data stored in plain text
   useEffect(() => {
     localStorage.setItem('todos', JSON.stringify(todos))
   }, [todos])
 
-  // Add new todo - VULNERABILITY 2: No input validation
   const addTodo = (): void => {
-    // No validation for empty strings, length limits, or malicious content
     if (inputValue) {
       const newTodo: Todo = {
         id: Date.now(),
-        text: inputValue, // VULNERABILITY 1: No XSS protection - HTML will be rendered
+        text: inputValue,  
         completed: false,
         createdAt: new Date().toISOString()
       }
@@ -55,20 +49,18 @@ function App() {
       setInputValue('')
     }
   }
+ 
 
-  // Toggle todo completion
   const toggleTodo = (id: number): void => {
     setTodos(todos.map(todo => 
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ))
   }
 
-  // Delete todo
   const deleteTodo = (id: number): void => {
     setTodos(todos.filter(todo => todo.id !== id))
   }
 
-  // Edit todo - VULNERABILITY 2: No input validation on edit
   const editTodo = (id: number, newText: string): void => {
     setTodos(todos.map(todo => 
       todo.id === id ? { ...todo, text: newText } : todo
@@ -207,7 +199,6 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
         </div>
       ) : (
         <div className="view-mode">
-          {/* VULNERABILITY 1: XSS - Using dangerouslySetInnerHTML without sanitization */}
           <span 
             className="todo-text"
             dangerouslySetInnerHTML={{ __html: todo.text }}
@@ -227,3 +218,5 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
 }
 
 export default App
+
+
